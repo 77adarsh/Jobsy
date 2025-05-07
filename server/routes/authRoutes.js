@@ -3,17 +3,25 @@ import User from '../models/User.js';
 import PasswordReset from '../models/PasswordReset.js';
 import nodemailer from 'nodemailer';
 import { check, validationResult } from 'express-validator';
+import jwt from 'jsonwebtoken';
+import bcrypt from 'bcryptjs';
 
 const router = express.Router();
 
+// Helper function to generate JWT
+const generateToken = (id) => {
+  return jwt.sign({ id }, process.env.JWT_SECRET, {
+    expiresIn: process.env.JWT_EXPIRE || '24h',
+  });
+};
 
 // Password Generator Function
 const generateRandomPassword = () => {
   const uppercaseChars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
   const lowercaseChars = 'abcdefghijklmnopqrstuvwxyz';
-  
+
   let password = '';
-  
+
   // Generate 8 character password with mix of uppercase and lowercase
   for (let i = 0; i < 4; i++) {
     password += uppercaseChars.charAt(Math.floor(Math.random() * uppercaseChars.length));
@@ -24,62 +32,210 @@ const generateRandomPassword = () => {
   return password.split('').sort(() => 0.5 - Math.random()).join('');
 };
 
-// Forgot Password Route
+// *******************
+//  User Registration
+// *******************
+router.post(
+  '/register',
+  [
+    check('name', 'Name is required').not().isEmpty(),
+    check('email', 'Please include a valid email').isEmail(),
+    check('password', 'Password must be at least 6 characters').isLength({ min: 6 }),
+  ],
+  async (req, res) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      console.log('/register Validation errors:', errors.array());
+      return res.status(400).json({ errors: errors.array() });
+    }
+
+    const { name, email, password } = req.body;
+    console.log('/register Request body:', { name, email, password }); // Debugging
+
+    try {
+      // Check if user exists
+      let user = await User.findOne({ email });
+      console.log('/register User.findOne result:', user); // Debugging
+      if (user) {
+        return res.status(400).json({ msg: 'User already exists' });
+      }
+
+      // Create new user
+      user = new User({
+        name,
+        email,
+        password, // Password will be hashed by the pre-save middleware
+      });
+
+      await user.save();
+      console.log('/register User saved:', user); // Debugging
+
+      // Generate JWT
+      const token = generateToken(user._id);
+      console.log('/register Generated token:', token); // Debugging
+
+      res.status(201).json({
+        token,
+        user: {
+          id: user.id,
+          name: user.name,
+          email: user.email,
+        },
+      });
+    } catch (err) {
+      console.error('/register Error:', err.message);
+      res.status(500).send('Server error');
+    }
+  }
+);
+
+// ***************
+//  User Login
+// ***************
+router.post(
+  '/login',
+  [
+    check('email', 'Please include a valid email').isEmail(),
+    check('password', 'Password is required').exists(),
+  ],
+  async (req, res) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      console.log('/login Validation errors:', errors.array());
+      return res.status(400).json({ errors: errors.array() });
+    }
+
+    const { email, password } = req.body;
+    console.log('/login Request body:', { email, password }); // Debugging
+
+    try {
+      // Find user by email
+      const user = await User.findOne({ email });
+      console.log('/login User.findOne result:', user); // Debugging
+
+      if (!user) {
+        console.log('/login User not found');
+        return res.status(401).json({ msg: 'Invalid credentials' });
+      }
+
+      // Check password
+      const isMatch = await user.matchPassword(password);
+      console.log('/login Password match:', isMatch); // Debugging
+
+      if (!isMatch) {
+        console.log('Password does not match');
+        return res.status(401).json({ msg: 'Invalid credentials' });
+      }
+
+      // Generate JWT
+      const token = generateToken(user._id);
+      console.log('/login Generated token:', token); // Debugging
+
+      res.json({
+        token,
+        user: {
+          id: user.id,
+          name: user.name,
+          email: user.email,
+        },
+      });
+    } catch (err) {
+      console.error('/login Error:', err.message);
+      res.status(500).send('Server error');
+    }
+  }
+);
+
+// *************************
+//  Get User Data (for /me)
+// *************************
+router.get('/me', async (req, res) => {
+  //  Authentication middleware is needed here to get user.
+  console.log('/me req.user:', req.user); // Debugging: Check if req.user is set
+  try {
+    const user = await User.findById(req.user.id).select('-password'); // req.user.id is set by the middleware
+    console.log('/me User.findById result:', user); // Debugging
+    if (!user) {
+      console.log('/me User not found');
+      return res.status(404).json({ msg: 'User not found' });
+    }
+    res.json({ user });
+  } catch (error) {
+    console.error('/me Error:', error.message);
+    res.status(500).send('Server Error');
+  }
+});
+
+// *********************
+//  Forgot Password Route
+// *********************
 router.post('/forgot-password', [
   check('email', 'Please include a valid email').isEmail()
 ], async (req, res) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
+    console.log('/forgot-password Validation errors:', errors.array());
     return res.status(400).json({ errors: errors.array() });
   }
 
+  const { email } = req.body;
+  console.log('/forgot-password Request body:', { email }); // Debugging
+
   try {
-    const { email } = req.body;
-    
     // Find user by email
     const user = await User.findOne({ email });
-    
+    console.log('/forgot-password User.findOne result:', user); // Debugging
+
     if (!user) {
-      return res.status(404).json({ msg: 'User not found' });
+      console.log('/forgot-password User not found (email might not exist, but we don\'t reveal that)');
+      return res.status(200).json({ msg: 'Password reset email sent' }); //  Don't reveal user existence.
     }
-    
+
     // Check if user already requested password reset in the last 24 hours
     const lastReset = await PasswordReset.findOne({
       userId: user._id,
       createdAt: { $gt: new Date(Date.now() - 24 * 60 * 60 * 1000) }
     });
+    console.log('/forgot-password PasswordReset.findOne result:', lastReset); // Debugging
 
     if (lastReset) {
-      return res.status(400).json({ 
-        msg: 'You can only request a password reset once per day. Please try again tomorrow.'
+      return res.status(400).json({
+        msg: 'You can only request a password reset once per day. Please try again tomorrow.',
       });
     }
-    
+
     // Generate new password
     const newPassword = generateRandomPassword();
-    
+
+    // Hash the new password
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(newPassword, salt);
+
     // Update user password in DB
-    user.password = newPassword;
+    user.password = hashedPassword;
     await user.save();
-    
+    console.log('/forgot-password User password updated');
+
     // Create password reset record
     await PasswordReset.create({
       userId: user._id,
-      requestedAt: new Date()
+      requestedAt: new Date(),
     });
+    console.log('/forgot-password PasswordReset record created');
 
     // Send email with new password
     const transporter = nodemailer.createTransport({
       // Configure your email provider here
-      service: 'gmail',
+      service: process.env.EMAIL_SERVICE,
       auth: {
         user: process.env.EMAIL_USERNAME,
         pass: process.env.EMAIL_PASSWORD
       }
     });
-    
+    console.log('/forgot-password nodemailer transporter created');
+
     const mailOptions = {
-      from: process.env.EMAIL_USERNAME,
+      from: `${process.env.EMAIL_FROM_NAME} <${process.env.EMAIL_FROM}>`,
       to: email,
       subject: 'Your Password Reset',
       html: `
@@ -89,13 +245,21 @@ router.post('/forgot-password', [
         <p>Please login with this password and change it immediately.</p>
       `
     };
-    
-    await transporter.sendMail(mailOptions);
-    
+    console.log('/forgot-password mailOptions:', mailOptions);
+
+    try{
+      await transporter.sendMail(mailOptions);
+      console.log('/forgot-password Email sent successfully');
+    } catch(mailError){
+      console.error("/forgot-password Error sending mail", mailError);
+      return res.status(500).send("Error sending email"); // IMPORTANT: Handle mail sending error
+    }
+
+
     res.json({ msg: 'Password reset email sent' });
-    
+
   } catch (err) {
-    console.error(err.message);
+    console.error('/forgot-password Error:', err.message);
     res.status(500).send('Server error');
   }
 });

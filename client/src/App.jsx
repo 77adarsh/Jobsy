@@ -1,22 +1,28 @@
+// src/App.jsx
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import { AuthProvider } from './context/AuthContext.jsx';
-import ForgotPassword from './pages/ForgotPassword.jsx';
 import Home from './pages/Home.jsx';
-// Import other pages as needed
+import Login from './pages/Login.jsx';
+import Register from './pages/Register.jsx';
+import Profile from './pages/Profile.jsx';
+import { AuthProvider } from './context/AuthContext.jsx';
+import PrivateRoute from './components/PrivateRoutes.jsx';
+import ForgotPassword from './pages/ForgotPassword.jsx';
 
-function App() {
+const App = () => {
   return (
-    <AuthProvider>
-      <Router>
+    <Router>
+      <AuthProvider>
         <Routes>
-          <Route path="/" element={<Home />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
-          {/* Add other routes as needed */}
+          <Route path="/" element={<PrivateRoute><Home /></PrivateRoute>} />
+          <Route path="/profile" element={<PrivateRoute><Profile /></PrivateRoute>} />
         </Routes>
-      </Router>
-    </AuthProvider>
+      </AuthProvider>
+    </Router>
   );
-}
+};
 
 export default App;

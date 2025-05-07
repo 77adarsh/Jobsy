@@ -5,6 +5,10 @@ const PasswordResetSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: 'user',
     required: true
+  },
+  requestedAt: { //  Keep track of when the reset was requested
+    type: Date,
+    required: true
   }
 }, { timestamps: true });
 
