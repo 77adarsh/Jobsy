@@ -42,7 +42,7 @@ api.interceptors.response.use(
 
 // Auth service functions
 export const authService = {
-  login: (credentials) => api.post('/auth/login', credentials),
+  login: (email, password) => api.post('/auth/login', {email, password}),
   register: (userData) => api.post('/auth/register', userData),
   forgotPassword: (email) => api.post('/auth/forgot-password', { email }),
   resetPassword: (resetData) => api.post('/auth/reset-password', resetData),

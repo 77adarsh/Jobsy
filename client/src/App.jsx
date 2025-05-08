@@ -6,7 +6,7 @@ import Login from './pages/Login.jsx';
 import Register from './pages/Register.jsx';
 import Profile from './pages/Profile.jsx';
 import { AuthProvider } from './context/AuthContext.jsx';
-import PrivateRoute from './components/PrivateRoutes.jsx';
+import PrivateRoute from './components/PrivateRoute.jsx';
 import ForgotPassword from './pages/ForgotPassword.jsx';
 
 const App = () => {

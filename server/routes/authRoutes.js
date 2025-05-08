@@ -5,6 +5,7 @@ import nodemailer from 'nodemailer';
 import { check, validationResult } from 'express-validator';
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcryptjs';
+import verifyToken from "../middlewares/verifyToken.js";
 
 const router = express.Router();
 
@@ -149,20 +150,21 @@ router.post(
 // *************************
 //  Get User Data (for /me)
 // *************************
-router.get('/me', async (req, res) => {
-  //  Authentication middleware is needed here to get user.
-  console.log('/me req.user:', req.user); // Debugging: Check if req.user is set
+// GET USER INFO (Protected route)
+router.get('/me', verifyToken, async (req, res) => {
   try {
-    const user = await User.findById(req.user.id).select('-password'); // req.user.id is set by the middleware
-    console.log('/me User.findById result:', user); // Debugging
-    if (!user) {
-      console.log('/me User not found');
-      return res.status(404).json({ msg: 'User not found' });
-    }
-    res.json({ user });
-  } catch (error) {
-    console.error('/me Error:', error.message);
-    res.status(500).send('Server Error');
+    console.log('/me req.user:', req.user); // Debug log
+
+    const userId = req.user.id; // Ensure token has 'id' field
+    const user = await User.findById(userId);
+
+    if (!user) return res.status(404).json('User not found');
+
+    const { password, ...others } = user._doc;
+    res.status(200).json(others);
+  } catch (err) {
+    console.error('/me Error:', err);
+    res.status(500).json('Internal Server Error');
   }
 });
 

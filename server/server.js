@@ -3,7 +3,7 @@ import cors from "cors";
 import dotenv from "dotenv";
 import connectDB from "./config/db.js";
 import authRoutes from "./routes/authRoutes.js";
-import { errorHandler } from "./middleware/errorMiddleware.js"; // Import error handler
+import { errorHandler } from "./middlewares/errorMiddleware.js"; // Import error handler
 
 dotenv.config();
 connectDB();

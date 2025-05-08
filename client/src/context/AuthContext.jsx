@@ -1,7 +1,7 @@
 import React, { createContext, useState, useEffect, useContext } from 'react';
-import { useNavigate, Routes, Route, Navigate } from 'react-router-dom';  // Import Navigate
+import { useNavigate } from 'react-router-dom'; // ✅ Correct import
 import axios from 'axios';
-import * as jwt_decode from 'jwt-decode';
+import { jwtDecode } from 'jwt-decode'; // ✅ Named import
 
 const AuthContext = createContext();
 
@@ -16,7 +16,7 @@ export const AuthProvider = ({ children }) => {
       const storedToken = localStorage.getItem('token');
       if (storedToken) {
         try {
-          const decoded = jwt_decode(storedToken);
+          const decoded = jwtDecode(storedToken); // ✅ Updated usage
           if (decoded.exp * 1000 < Date.now()) {
             localStorage.removeItem('token');
             setToken(null);
@@ -26,7 +26,11 @@ export const AuthProvider = ({ children }) => {
           }
 
           try {
-            const response = await axios.get('/api/auth/me');
+            const response = await axios.get('/api/auth/me', {
+              headers: {
+                Authorization: `Bearer ${storedToken}`,
+              },
+            });            
             setUser(response.data.user);
             setToken(storedToken);
           } catch (error) {
@@ -105,7 +109,7 @@ export const AuthProvider = ({ children }) => {
 
   return (
     <AuthContext.Provider value={value}>
-      {children}  {/* Render children regardless of isLoading */}
+      {children}
     </AuthContext.Provider>
   );
 };
@@ -113,41 +117,3 @@ export const AuthProvider = ({ children }) => {
 export const useAuth = () => {
   return useContext(AuthContext);
 };
-
-//  Create a ProtectedRoute component
-const ProtectedRoute = ({ children }) => {
-  const { user, isLoading } = useAuth();
-  if (isLoading) {
-    //  Show a loading indicator while checking auth state
-    return <div>Loading...</div>; //  Or a more sophisticated loader
-  }
-  if (!user) {
-    //  Redirect to login if not authenticated
-    return <Navigate to="/login" />;
-  }
-  return children; //  Render the protected component
-};
-
-//  Example usage in your App.js or similar
-const App = () => {
-  return (
-    <AuthProvider>
-      <Routes>
-        <Route path="/login" element={<Login />} />
-        <Route path="/register" element={<Register />} />
-        <Route path="/forgot-password" element={<ForgotPassword />} />
-        <Route
-          path="/"
-          element={
-            <ProtectedRoute>
-              <Home />  {/* Your protected home page */}
-            </ProtectedRoute>
-          }
-        />
-        {/* Other routes */}
-      </Routes>
-    </AuthProvider>
-  );
-};
-
-export default App;
