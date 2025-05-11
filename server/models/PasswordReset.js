@@ -6,7 +6,7 @@ const PasswordResetSchema = new mongoose.Schema({
     ref: 'user',
     required: true
   },
-  requestedAt: { //  Keep track of when the reset was requested
+  requestedAt: {
     type: Date,
     required: true
   }

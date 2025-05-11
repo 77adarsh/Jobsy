@@ -36,12 +36,10 @@ export const registerUser = async (req, res) => {
   }
 
   const { name, email, password } = req.body;
-  console.log('/register Request body:', { name, email, password }); // Debugging
 
   try {
     // Check if user exists
     let user = await User.findOne({ email });
-    console.log('/register User.findOne result:', user); // Debugging
     if (user) {
       return res.status(400).json({ msg: 'User already exists' });
     }
@@ -54,11 +52,9 @@ export const registerUser = async (req, res) => {
     });
 
     await user.save();
-    console.log('/register User saved:', user); // Debugging
 
     // Generate JWT
     const token = generateToken(user._id);
-    console.log('/register Generated token:', token); // Debugging
 
     res.status(201).json({
       token,
@@ -85,12 +81,10 @@ export const loginUser = async (req, res) => {
   }
 
   const { email, password } = req.body;
-  console.log('/login Request body:', { email, password }); // Debugging
 
   try {
     // Find user by email
     const user = await User.findOne({ email });
-    console.log('/login User.findOne result:', user); // Debugging
 
     if (!user) {
       console.log('/login User not found');
@@ -99,7 +93,6 @@ export const loginUser = async (req, res) => {
 
     // Check password
     const isMatch = await user.matchPassword(password);
-    console.log('/login Password match:', isMatch); // Debugging
 
     if (!isMatch) {
       console.log('Password does not match');
@@ -108,7 +101,6 @@ export const loginUser = async (req, res) => {
 
     // Generate JWT
     const token = generateToken(user._id);
-    console.log('/login Generated token:', token); // Debugging
 
     res.json({
       token,
@@ -129,9 +121,7 @@ export const loginUser = async (req, res) => {
 // *************************
 export const getUserProfile = async (req, res) => {
   try {
-    console.log('/me req.user:', req.user); // Debug log
-
-    const userId = req.user.id; // Ensure token has 'id' field
+    const userId = req.user.id;
     const user = await User.findById(userId);
 
     if (!user) return res.status(404).json('User not found');
@@ -155,12 +145,10 @@ export const forgotPassword = async (req, res) => {
   }
 
   const { email } = req.body;
-  console.log('/forgot-password Request body:', { email }); // Debugging
 
   try {
     // Find user by email
     const user = await User.findOne({ email });
-    console.log('/forgot-password User.findOne result:', user); // Debugging
 
     if (!user) {
       console.log('/forgot-password User not found (email might not exist, but we don\'t reveal that)');
@@ -201,7 +189,7 @@ export const forgotPassword = async (req, res) => {
 
     // Send email with new password
     const transporter = nodemailer.createTransport({
-      // Configure your email provider here
+      // Configure email provider here
       service: process.env.EMAIL_SERVICE,
       auth: {
         user: process.env.EMAIL_USERNAME,
@@ -228,7 +216,7 @@ export const forgotPassword = async (req, res) => {
       console.log('/forgot-password Email sent successfully');
     } catch(mailError){
       console.error("/forgot-password Error sending mail", mailError);
-      return res.status(500).send("Error sending email"); // IMPORTANT: Handle mail sending error
+      return res.status(500).send("Error sending email");
     }
 
     res.json({ msg: 'Password reset email sent' });
