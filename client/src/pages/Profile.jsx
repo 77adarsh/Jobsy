@@ -1,6 +1,7 @@
 // src/pages/Profile.jsx
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext.jsx';
+import MyMap from '../components/MyMap.jsx'; // Assuming MyMap.jsx is in a 'components' folder
 
 const Profile = () => {
   const { user } = useAuth();
@@ -10,15 +11,21 @@ const Profile = () => {
   const [email, setEmail] = useState('');
   // Add more state for other profile fields
 
+  // State for location tracking feature
+  const [userLocation, setUserLocation] = useState(null); // Stores city, state, country from backend
+  const [weatherData, setWeatherData] = useState(null);
+  const [loadingLocation, setLoadingLocation] = useState(false);
+  const [locationError, setLocationError] = useState('');
+
+  // New states to store raw latitude and longitude for the map
+  const [currentLat, setCurrentLat] = useState(null);
+  const [currentLng, setCurrentLng] = useState(null);
+
   useEffect(() => {
-    // In a real application, you would fetch the user's full profile data here
-    // based on the user ID or token. For now, we'll use the basic user info
-    // from the AuthContext.
     if (user) {
       setProfileData(user);
       setName(user.name || '');
       setEmail(user.email || '');
-      // Initialize other state fields
     }
   }, [user]);
 
@@ -27,21 +34,82 @@ const Profile = () => {
   };
 
   const handleSaveClick = () => {
-    // In a real application, you would send the updated profile data
-    // to your backend API to save the changes.
     console.log('Saving profile:', { name, email /*, ...otherFields */ });
     setIsEditing(false);
-    // Optionally update the AuthContext user data if the backend returns
-    // the updated user object.
   };
 
   const handleCancelClick = () => {
     setIsEditing(false);
-    // Reset form values to the current profile data
     if (profileData) {
       setName(profileData.name || '');
       setEmail(profileData.email || '');
-      // Reset other state fields
+    }
+  };
+
+  const handleObtainLocation = async () => {
+    setLoadingLocation(true);
+    setLocationError('');
+    setUserLocation(null);
+    setWeatherData(null);
+    setCurrentLat(null); // Clear previous lat/lng
+    setCurrentLng(null); // Clear previous lat/lng
+
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        async (position) => {
+          const { latitude, longitude } = position.coords;
+          setCurrentLat(latitude); // Store raw latitude
+          setCurrentLng(longitude); // Store raw longitude
+
+          try {
+            // Call your backend API with latitude and longitude
+            const response = await fetch(
+              `${import.meta.env.VITE_BACKEND_API_URL}/api/location/track?lat=${latitude}&lng=${longitude}`
+            );
+            const data = await response.json();
+
+            if (response.ok) {
+              setUserLocation(data.location);
+              setWeatherData(data.weather);
+              // NOTE: We are no longer using data.mapUrl here as we use Leaflet.js
+            } else {
+              setLocationError(data.message || 'Failed to obtain location data from server.');
+            }
+          } catch (error) {
+            console.error('Error fetching location data from backend:', error);
+            setLocationError('Network error or server unavailable. Please try again.');
+          } finally {
+            setLoadingLocation(false);
+          }
+        },
+        (error) => {
+          setLoadingLocation(false);
+          let errorMessage = 'Unable to retrieve your location.';
+          switch (error.code) {
+            case error.PERMISSION_DENIED:
+              errorMessage = 'Location permission denied. Please enable location services in your browser settings.';
+              break;
+            case error.POSITION_UNAVAILABLE:
+              errorMessage = 'Location information is unavailable.';
+              break;
+            case error.TIMEOUT:
+              errorMessage = 'The request to get user location timed out.';
+              break;
+            default:
+              break;
+          }
+          setLocationError(errorMessage);
+          console.error('Geolocation error:', error);
+        },
+        {
+          enableHighAccuracy: true,
+          timeout: 10000,
+          maximumAge: 0,
+        }
+      );
+    } else {
+      setLoadingLocation(false);
+      setLocationError('Geolocation is not supported by your browser.');
     }
   };
 
@@ -91,7 +159,6 @@ const Profile = () => {
                   onChange={(e) => setEmail(e.target.value)}
                 />
               </div>
-              {/* Add more input fields for other profile information */}
               <div className="mt-6 flex justify-end space-x-2">
                 <button
                   type="button"
@@ -127,7 +194,6 @@ const Profile = () => {
                   {profileData.email}
                 </dd>
               </div>
-              {/* Display other profile information here */}
               <div className="mt-6">
                 <button
                   onClick={handleEditClick}
@@ -135,6 +201,60 @@ const Profile = () => {
                 >
                   Edit Profile
                 </button>
+              </div>
+
+              {/* Location Tracking Section */}
+              <div className="mt-8 pt-8 border-t border-gray-200">
+                <h3 className="text-lg leading-6 font-medium text-gray-900 mb-4">
+                  Location Services
+                </h3>
+                <button
+                  onClick={handleObtainLocation}
+                  className="inline-flex items-center px-4 py-2 bg-green-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 active:bg-green-800 disabled:opacity-50"
+                  disabled={loadingLocation}
+                >
+                  {loadingLocation ? 'Obtaining Location...' : 'Obtain Location'}
+                </button>
+
+                {locationError && (
+                  <p className="mt-4 text-sm text-red-600">{locationError}</p>
+                )}
+
+                {userLocation && (currentLat !== null && currentLng !== null) && (
+                  <div className="mt-6 p-4 bg-gray-50 rounded-md shadow-inner">
+                    <h4 className="text-md font-semibold text-gray-800 mb-2">Your Current Location:</h4>
+                    <p className="text-sm text-gray-700">
+                      <strong className="font-medium">Location:</strong> {userLocation.city}, {userLocation.state}, {userLocation.country}
+                    </p>
+
+                    {weatherData && (
+                      <div className="mt-4">
+                        <h4 className="text-md font-semibold text-gray-800 mb-2">Current Weather:</h4>
+                        <div className="flex items-center space-x-4">
+                          {/* Ensure weatherData.icon is valid before rendering */}
+                          {weatherData.icon && (
+                            <img src={weatherData.icon} alt={weatherData.description} className="w-12 h-12" />
+                          )}
+                          <div>
+                            <p className="text-lg font-bold text-gray-900">{weatherData.temperature}°C</p>
+                            <p className="text-sm text-gray-600 capitalize">{weatherData.description}</p>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Render the MyMap component */}
+                    <div className="mt-6">
+                      <h4 className="text-md font-semibold text-gray-800 mb-2">Location on Map:</h4>
+                      <div className="border border-gray-300 rounded-md overflow-hidden">
+                        <MyMap latitude={currentLat} longitude={currentLng} />
+                      </div>
+                      <p className="mt-2 text-xs text-gray-500">
+                        Map powered by OpenStreetMap. Weather conditions displayed separately.
+                      </p>
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
           )}
