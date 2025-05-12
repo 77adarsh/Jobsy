@@ -2,6 +2,10 @@
 import React from 'react';
 import Navbar from '../components/Navbar.jsx';
 import Footer from './Footer.jsx';
+import JobCategories from './JobCategories.jsx';
+import JobInfoCard from './InfoCard.jsx';
+import CvUploadSection from './CVUploadSection.jsx';
+
 import teamImage from '../assets/team.png';
 import adobeImage from '../assets/adobe.png';
 import amazonImage from '../assets/amazon.png';
@@ -17,7 +21,6 @@ import nvidiaLogo from "../assets/nvidia.png";
 import xLogo from "../assets/x.png";
 import zomatoLogo from "../assets/zomato.png";
 import linkedinLogo from "../assets/linkedin.png";
-import flipkartLogo from "../assets/flipkart.png";
 
 const LandingPage = () => {
   return (
@@ -104,61 +107,9 @@ const LandingPage = () => {
         </div>
       </div>
       
-      {/* Job Categories Section */}
-      <div className="container mx-auto px-4 py-16">
-        <h2 className="text-3xl font-bold text-center mb-12">Job Category</h2>
-        
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {/* Category 1 */}
-          <div className="bg-blue-600 text-white p-6 rounded-lg">
-            <h3 className="text-xl font-semibold mb-4">Web developer</h3>
-            <p className="text-sm opacity-90">
-              Lorem ipsum is simply dummy text of the printing and industry Lorem ipsum has been
-            </p>
-          </div>
-          
-          {/* Category 2 */}
-          <div className="bg-gray-100 p-6 rounded-lg">
-            <h3 className="text-xl font-semibold mb-4">UI designer</h3>
-            <p className="text-sm text-gray-600">
-              Lorem ipsum is simply dummy text of the printing and industry Lorem ipsum has been
-            </p>
-          </div>
-          
-          {/* Category 3 */}
-          <div className="bg-gray-100 p-6 rounded-lg">
-            <h3 className="text-xl font-semibold mb-4">project management</h3>
-            <p className="text-sm text-gray-600">
-              Lorem ipsum is simply dummy text of the printing and industry Lorem ipsum has been
-            </p>
-          </div>
-          
-          {/* Category 4 */}
-          <div className="bg-gray-100 p-6 rounded-lg">
-            <h3 className="text-xl font-semibold mb-4">business consulting</h3>
-            <p className="text-sm text-gray-600">
-              Lorem ipsum is simply dummy text of the printing and industry Lorem ipsum has been
-            </p>
-          </div>
-          
-          {/* Category 5 */}
-          <div className="bg-gray-100 p-6 rounded-lg">
-            <h3 className="text-xl font-semibold mb-4">finance management</h3>
-            <p className="text-sm text-gray-600">
-              Lorem ipsum is simply dummy text of the printing and industry Lorem ipsum has been
-            </p>
-          </div>
-          
-          {/* Category 6 */}
-          <div className="bg-gray-100 p-6 rounded-lg">
-            <h3 className="text-xl font-semibold mb-4">Product designer</h3>
-            <p className="text-sm text-gray-600">
-              Lorem ipsum is simply dummy text of the printing and industry Lorem ipsum has been
-            </p>
-          </div>
-        </div>
-      </div>
-      
+      {/* Job Categories */}
+      <JobCategories />
+
       {/* Featured Jobs Section */}
       <div className="container mx-auto px-4 py-16">
         <h2 className="text-3xl font-bold text-center mb-12">Feature Job Circular</h2>
@@ -239,46 +190,9 @@ const LandingPage = () => {
       </div>
       
       {/* Job Info Card */}
-      <div className="container mx-auto px-4 py-8">
-        <div className="bg-white rounded-lg shadow-lg p-6 mb-12">
-          <div className="flex flex-col lg:flex-row">
-            <div className="w-full lg:w-1/2 mb-6 lg:mb-0">
-              <img src="/api/placeholder/400/200" alt="Job Info" className="w-full rounded-lg" />
-            </div>
-            <div className="w-full lg:w-1/2 lg:pl-8">
-              <h3 className="text-2xl font-bold mb-4">How much job listed here</h3>
-              <p className="text-gray-600 text-sm mb-6">
-                Job listings typically include experience and education requirements, a description of the position, what materials you need to apply.
-              </p>
-              <button className="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg">
-                View More
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
+      <JobInfoCard />
       
-      {/* CV Upload Section */}
-      <div className="container mx-auto px-4 py-8">
-        <div className="bg-blue-600 rounded-lg text-white p-8 mb-12 relative overflow-hidden">
-          <div className="flex flex-col md:flex-row items-center justify-between">
-            <div className="w-full md:w-1/3 mb-6 md:mb-0">
-              <img src={managerImage} alt="Business person" className="w-full" />
-            </div>
-            <div className="w-full md:w-2/3 text-center md:text-right">
-              <h3 className="text-2xl md:text-3xl font-bold mb-3">Just drop your CV</h3>
-              <h4 className="text-xl md:text-2xl font-bold mb-6">and get the job</h4>
-              <button className="bg-white text-blue-600 hover:bg-gray-100 font-medium py-2 px-4 rounded-lg flex items-center mx-auto md:ml-auto md:mr-0">
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
-                </svg>
-                Upload CV
-              </button>
-            </div>
-          </div>
-          <div className="absolute -bottom-10 -right-10 w-32 h-32 bg-blue-500 rounded-full opacity-50"></div>
-        </div>
-      </div>
+      <CvUploadSection />
       
       {/* Footer */}
       <Footer />
