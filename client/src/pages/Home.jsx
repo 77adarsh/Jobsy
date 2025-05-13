@@ -32,38 +32,10 @@ const Home = () => {
           <div className="bg-white shadow rounded-lg p-6">
             <h2 className="text-xl font-semibold text-gray-800 mb-4">Welcome, {user ? user.name : 'Guest'}!</h2>
             <p className="text-gray-600">
-              Explore opportunities and manage your professional profile.
+              Explore opportunities.
             </p>
           </div>
         </section>
-
-        {user && (
-          <section className="mb-8">
-            <div className="bg-white shadow rounded-lg p-6">
-              <h2 className="text-xl font-semibold text-gray-800 mb-4">Your Profile Overview</h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="p-4 border rounded-md">
-                  <h3 className="font-semibold text-gray-700 mb-2">Basic Information</h3>
-                  <p className="text-gray-600">Name: {user.name}</p>
-                  <p className="text-gray-600">Email: {user.email}</p>
-                  <Link to="/profile" className="inline-block mt-4 text-blue-600 hover:underline">
-                    Edit Profile
-                  </Link>
-                </div>
-                <div className="p-4 border rounded-md">
-                  <h3 className="font-semibold text-gray-700 mb-2">Skills</h3>
-                  <ul className="list-disc list-inside text-gray-600">
-                    <li>Web Development</li>
-                    <li>React</li>
-                    <li>JavaScript</li>
-                    {/* Add more skills dynamically later */}
-                  </ul>
-                </div>
-                {/* Add more profile overview sections like experience, education, etc. */}
-              </div>
-            </div>
-          </section>
-        )}
 
         <section className="mb-8">
           <div className="bg-white shadow rounded-lg p-6">
