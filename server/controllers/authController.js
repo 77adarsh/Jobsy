@@ -1,4 +1,4 @@
-// controllers/authController.js
+// controllers/authController.js - Debug Version
 import User from '../models/User.js';
 import PasswordReset from '../models/PasswordReset.js';
 import nodemailer from 'nodemailer';
@@ -15,14 +15,12 @@ const generateToken = (id) => {
 
 // Password Generator Function
 const generateRandomPassword = () => {
-  const uppercaseChars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
-  const lowercaseChars = 'abcdefghijklmnopqrstuvwxyz';
+  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
   let password = '';
-  for (let i = 0; i < 4; i++) {
-    password += uppercaseChars.charAt(Math.floor(Math.random() * uppercaseChars.length));
-    password += lowercaseChars.charAt(Math.floor(Math.random() * lowercaseChars.length));
+  for (let i = 0; i < 8; i++) {
+    password += chars.charAt(Math.floor(Math.random() * chars.length));
   }
-  return password.split('').sort(() => 0.5 - Math.random()).join('');
+  return password;
 };
 
 // *******************
@@ -81,21 +79,25 @@ export const loginUser = async (req, res) => {
   }
 
   const { email, password } = req.body;
+  console.log(`Login attempt for email: ${email}`);
 
   try {
-    // Find user by email
-    const user = await User.findOne({ email });
+    // Find user by email WITH password field included
+    const user = await User.findOne({ email }).select('+password');
 
     if (!user) {
-      console.log('/login User not found');
+      console.log(`Login failed: User with email ${email} not found`);
       return res.status(401).json({ msg: 'Invalid credentials' });
     }
 
-    // Check password
-    const isMatch = await user.matchPassword(password);
+    console.log(`User found, password from DB: ${user.password ? 'exists' : 'missing'}`);
+    
+    // Direct comparison with bcrypt
+    const isMatch = await bcrypt.compare(password, user.password);
+    console.log(`Password comparison result: ${isMatch ? 'match' : 'no match'}`);
 
     if (!isMatch) {
-      console.log('Password does not match');
+      console.log('Login failed: Password does not match');
       return res.status(401).json({ msg: 'Invalid credentials' });
     }
 
@@ -122,15 +124,14 @@ export const loginUser = async (req, res) => {
 export const getUserProfile = async (req, res) => {
   try {
     const userId = req.user.id;
-    const user = await User.findById(userId);
+    const user = await User.findById(userId).select('-password');
 
-    if (!user) return res.status(404).json('User not found');
+    if (!user) return res.status(404).json({ msg: 'User not found' });
 
-    const { password, ...others } = user._doc;
-    res.status(200).json(others);
+    res.status(200).json({ user });
   } catch (err) {
     console.error('/me Error:', err);
-    res.status(500).json('Internal Server Error');
+    res.status(500).json({ msg: 'Internal Server Error' });
   }
 };
 
@@ -145,59 +146,70 @@ export const forgotPassword = async (req, res) => {
   }
 
   const { email } = req.body;
+  console.log(`Password reset request for email: ${email}`);
 
   try {
     // Find user by email
     const user = await User.findOne({ email });
 
     if (!user) {
-      console.log('/forgot-password User not found (email might not exist, but we don\'t reveal that)');
-      return res.status(200).json({ msg: 'Password reset email sent' }); //  Don't reveal user existence.
+      console.log('/forgot-password User not found');
+      return res.status(200).json({ msg: 'Password reset email sent' }); // Don't reveal user existence
     }
+
+    console.log(`User found with ID: ${user._id}`);
 
     // Check if user already requested password reset in the last 24 hours
     const lastReset = await PasswordReset.findOne({
       userId: user._id,
-      createdAt: { $gt: new Date(Date.now() - 24 * 60 * 60 * 1000) }
+      requestedAt: { $gt: new Date(Date.now() - 24 * 60 * 60 * 1000) }
     });
-    console.log('/forgot-password PasswordReset.findOne result:', lastReset); // Debugging
-
+    
     if (lastReset) {
+      console.log(`User already requested reset within 24 hours at: ${lastReset.requestedAt}`);
       return res.status(400).json({
         msg: 'You can only request a password reset once per day. Please try again tomorrow.',
       });
     }
 
     // Generate new password
-    const newPassword = generateRandomPassword();
+    const tempPassword = generateRandomPassword();
+    console.log(`Generated temporary password: ${tempPassword}`); // For debugging - remove in production
 
-    // Hash the new password
+    // Hash the new password with bcrypt directly
     const salt = await bcrypt.genSalt(10);
-    const hashedPassword = await bcrypt.hash(newPassword, salt);
+    const hashedPassword = await bcrypt.hash(tempPassword, salt);
+    console.log(`Generated hashed password: ${hashedPassword}`);
 
-    // Update user password in DB
-    user.password = hashedPassword;
-    await user.save();
-    console.log('/forgot-password User password updated');
+    // Direct database update to bypass any middleware issues
+    const result = await User.updateOne(
+      { _id: user._id },
+      { $set: { password: hashedPassword } }
+    );
 
+    console.log(`Password update result: ${JSON.stringify(result)}`);
+    
+    if (result.modifiedCount !== 1) {
+      console.log('Password update failed');
+      return res.status(500).json({ msg: 'Failed to update password' });
+    }
+    
     // Create password reset record
-    await PasswordReset.create({
+    const resetRecord = await PasswordReset.create({
       userId: user._id,
       requestedAt: new Date(),
     });
-    console.log('/forgot-password PasswordReset record created');
+    console.log(`Password reset record created: ${resetRecord._id}`);
 
     // Send email with new password
     const transporter = nodemailer.createTransport({
-      // Configure email provider here
       service: process.env.EMAIL_SERVICE,
       auth: {
         user: process.env.EMAIL_USERNAME,
         pass: process.env.EMAIL_PASSWORD
       }
     });
-    console.log('/forgot-password nodemailer transporter created');
-
+    
     const mailOptions = {
       from: `${process.env.EMAIL_FROM_NAME} <${process.env.EMAIL_FROM}>`,
       to: email,
@@ -205,24 +217,23 @@ export const forgotPassword = async (req, res) => {
       html: `
         <h1>Password Reset</h1>
         <p>Your password has been reset. Here is your new temporary password:</p>
-        <h2>${newPassword}</h2>
+        <h2>${tempPassword}</h2>
         <p>Please login with this password and change it immediately.</p>
       `
     };
-    console.log('/forgot-password mailOptions:', mailOptions);
 
-    try{
+    try {
       await transporter.sendMail(mailOptions);
-      console.log('/forgot-password Email sent successfully');
-    } catch(mailError){
-      console.error("/forgot-password Error sending mail", mailError);
-      return res.status(500).send("Error sending email");
+      console.log('Password reset email sent successfully');
+    } catch(mailError) {
+      console.error("Error sending mail", mailError);
+      return res.status(500).json({ msg: 'Error sending email' });
     }
 
     res.json({ msg: 'Password reset email sent' });
 
   } catch (err) {
     console.error('/forgot-password Error:', err.message);
-    res.status(500).send('Server error');
+    res.status(500).json({ msg: 'Server error' });
   }
 };

@@ -7,7 +7,6 @@ const ForgotPassword = () => {
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const navigate = useNavigate();
 
   const { forgotPassword } = useAuth(); // Use forgotPassword from AuthContext
 

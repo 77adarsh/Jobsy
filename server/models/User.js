@@ -1,3 +1,4 @@
+// models/User.js - Simplified Version
 import mongoose from 'mongoose';
 import bcrypt from 'bcryptjs';
 
@@ -9,24 +10,28 @@ const UserSchema = new mongoose.Schema({
   email: {
     type: String,
     required: true,
-    unique: true
+    unique: true,
+    lowercase: true,
+    trim: true
   },
   password: {
     type: String,
-    required: true
+    required: true,
+    select: false // Don't return password by default
   },
-  date: {
-    type: Date,
-    default: Date.now
+  role: {
+    type: String,
+    enum: ['user', 'admin'],
+    default: 'user'
   }
-});
+}, { timestamps: true });
 
-// Hash password before saving
-UserSchema.pre('save', async function (next) {
+// Only hash password on document creation or password update
+UserSchema.pre('save', async function(next) {
   if (!this.isModified('password')) {
-    next();
-    return;
+    return next();
   }
+  
   try {
     const salt = await bcrypt.genSalt(10);
     this.password = await bcrypt.hash(this.password, salt);
@@ -36,9 +41,14 @@ UserSchema.pre('save', async function (next) {
   }
 });
 
-// Method to compare password
-UserSchema.methods.matchPassword = async function (enteredPassword) {
-  return bcrypt.compare(enteredPassword, this.password);
+// Match user entered password to hashed password in database
+UserSchema.methods.matchPassword = async function(enteredPassword) {
+  try {
+    return await bcrypt.compare(enteredPassword, this.password);
+  } catch (error) {
+    console.error('Error in matchPassword:', error);
+    return false;
+  }
 };
 
 const User = mongoose.model('user', UserSchema);
