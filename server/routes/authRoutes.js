@@ -4,7 +4,8 @@ import {
   registerUser,
   loginUser,
   getUserProfile,
-  forgotPassword
+  forgotPassword,
+  changePassword // Add the new controller function
 } from '../controllers/authController.js';
 import verifyToken from '../middlewares/verifyToken.js';
 import { check } from 'express-validator';
@@ -39,5 +40,11 @@ router.get('/me', verifyToken, getUserProfile);
 router.post('/forgot-password', [
   check('email', 'Please include a valid email').isEmail()
 ], forgotPassword);
+
+// Change Password Route (new route)
+router.post('/change-password', [
+  verifyToken,
+  check('newPassword', 'Password must be at least 8 characters').isLength({ min: 8 })
+], changePassword);
 
 export default router;

@@ -9,6 +9,7 @@ import Home from './pages/Home.jsx';
 import { AuthProvider } from './context/AuthContext.jsx';
 import PrivateRoute from './components/PrivateRoute.jsx';
 import ForgotPassword from './pages/ForgotPassword.jsx';
+import SetNewPassword from './components/SetNewPassword.jsx'; // Import the new component
 
 const App = () => {
   return (
@@ -19,6 +20,7 @@ const App = () => {
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
+          <Route path="/set-new-password" element={<PrivateRoute><SetNewPassword /></PrivateRoute>} />
           <Route path="/dashboard" element={<PrivateRoute><Dashboard /></PrivateRoute>} />
           <Route path="/profile" element={<PrivateRoute><Profile /></PrivateRoute>} />
         </Routes>

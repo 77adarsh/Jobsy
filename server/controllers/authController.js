@@ -1,4 +1,4 @@
-// controllers/authController.js - Debug Version
+// controllers/authController.js - Updated for temporary password flow
 import User from '../models/User.js';
 import PasswordReset from '../models/PasswordReset.js';
 import nodemailer from 'nodemailer';
@@ -7,8 +7,11 @@ import bcrypt from 'bcryptjs';
 import { validationResult } from 'express-validator';
 
 // Helper function to generate JWT
-const generateToken = (id) => {
-  return jwt.sign({ id }, process.env.JWT_SECRET, {
+const generateToken = (id, isTemporary = false) => {
+  return jwt.sign({ 
+    id,
+    isTemporaryPassword: isTemporary 
+  }, process.env.JWT_SECRET, {
     expiresIn: process.env.JWT_EXPIRE || '24h',
   });
 };
@@ -47,6 +50,7 @@ export const registerUser = async (req, res) => {
       name,
       email,
       password, // Password will be hashed by the pre-save middleware
+      isTemporaryPassword: false
     });
 
     await user.save();
@@ -82,8 +86,8 @@ export const loginUser = async (req, res) => {
   console.log(`Login attempt for email: ${email}`);
 
   try {
-    // Find user by email WITH password field included
-    const user = await User.findOne({ email }).select('+password');
+    // Find user by email WITH password and isTemporaryPassword fields included
+    const user = await User.findOne({ email }).select('+password +isTemporaryPassword');
 
     if (!user) {
       console.log(`Login failed: User with email ${email} not found`);
@@ -101,8 +105,8 @@ export const loginUser = async (req, res) => {
       return res.status(401).json({ msg: 'Invalid credentials' });
     }
 
-    // Generate JWT
-    const token = generateToken(user._id);
+    // Generate JWT - include isTemporaryPassword flag if the password is temporary
+    const token = generateToken(user._id, user.isTemporaryPassword);
 
     res.json({
       token,
@@ -110,6 +114,7 @@ export const loginUser = async (req, res) => {
         id: user.id,
         name: user.name,
         email: user.email,
+        requiresPasswordChange: user.isTemporaryPassword
       },
     });
   } catch (err) {
@@ -184,7 +189,12 @@ export const forgotPassword = async (req, res) => {
     // Direct database update to bypass any middleware issues
     const result = await User.updateOne(
       { _id: user._id },
-      { $set: { password: hashedPassword } }
+      { 
+        $set: { 
+          password: hashedPassword,
+          isTemporaryPassword: true // Mark this password as temporary
+        } 
+      }
     );
 
     console.log(`Password update result: ${JSON.stringify(result)}`);
@@ -218,7 +228,8 @@ export const forgotPassword = async (req, res) => {
         <h1>Password Reset</h1>
         <p>Your password has been reset. Here is your new temporary password:</p>
         <h2>${tempPassword}</h2>
-        <p>Please login with this password and change it immediately.</p>
+        <p>Please login with this password. You will be required to set a new password after login.</p>
+        <p>This temporary password will expire after first use.</p>
       `
     };
 
@@ -234,6 +245,59 @@ export const forgotPassword = async (req, res) => {
 
   } catch (err) {
     console.error('/forgot-password Error:', err.message);
+    res.status(500).json({ msg: 'Server error' });
+  }
+};
+
+// **********************
+// Change Password Route
+// **********************
+export const changePassword = async (req, res) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    console.log('/change-password Validation errors:', errors.array());
+    return res.status(400).json({ errors: errors.array() });
+  }
+
+  const { newPassword } = req.body;
+  const userId = req.user.id;
+
+  try {
+    // Get user by ID
+    const user = await User.findById(userId).select('+isTemporaryPassword');
+    if (!user) {
+      return res.status(404).json({ msg: 'User not found' });
+    }
+
+    // Hash the new password
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(newPassword, salt);
+
+    // Update the password and set isTemporaryPassword to false
+    const result = await User.updateOne(
+      { _id: userId },
+      { $set: { password: hashedPassword, isTemporaryPassword: false } }
+    );
+
+    if (result.modifiedCount !== 1) {
+      return res.status(500).json({ msg: 'Failed to update password' });
+    }
+
+    // Generate a new token without the temporary flag
+    const token = generateToken(userId, false);
+
+    res.json({ 
+      msg: 'Password updated successfully',
+      token,
+      user: {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        requiresPasswordChange: false
+      }
+    });
+  } catch (err) {
+    console.error('/change-password Error:', err.message);
     res.status(500).json({ msg: 'Server error' });
   }
 };

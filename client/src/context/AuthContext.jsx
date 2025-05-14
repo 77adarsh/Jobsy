@@ -9,6 +9,7 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [token, setToken] = useState(localStorage.getItem('token'));
   const [isLoading, setIsLoading] = useState(true);
+  const [requiresPasswordChange, setRequiresPasswordChange] = useState(false);
   const navigate = useNavigate();
 
   // Set the Authorization header for all future requests when token changes
@@ -32,8 +33,14 @@ export const AuthProvider = ({ children }) => {
             localStorage.removeItem('token');
             setToken(null);
             setUser(null);
+            setRequiresPasswordChange(false);
             setIsLoading(false);
             return;
+          }
+
+          // Check if this is a temporary password
+          if (decoded.isTemporaryPassword) {
+            setRequiresPasswordChange(true);
           }
 
           // Set default headers for axios
@@ -50,6 +57,7 @@ export const AuthProvider = ({ children }) => {
               localStorage.removeItem('token');
               setToken(null);
               setUser(null);
+              setRequiresPasswordChange(false);
             }
           }
         } catch (error) {
@@ -57,25 +65,38 @@ export const AuthProvider = ({ children }) => {
           localStorage.removeItem('token');
           setToken(null);
           setUser(null);
+          setRequiresPasswordChange(false);
         }
       }
       setIsLoading(false);
     };
 
     loadUser();
-  }, []); // Remove navigate from dependency array
+  }, []); 
+
+  // Handle redirecting to change password page if needed
+  useEffect(() => {
+    if (requiresPasswordChange && user && !isLoading) {
+      navigate('/set-new-password');
+    }
+  }, [requiresPasswordChange, user, isLoading, navigate]);
 
   const login = async (email, password) => {
     try {
       const response = await axios.post('/api/auth/login', { email, password });
       const { token: newToken, user: loggedInUser } = response.data;
       
+      // Check if the user needs to change their password
+      if (response.data.user.requiresPasswordChange) {
+        setRequiresPasswordChange(true);
+      }
+      
       // First set the token and user in state
       localStorage.setItem('token', newToken);
       setToken(newToken);
       setUser(loggedInUser);
       
-      // Then navigate after state is updated
+      // Return success
       return true;
     } catch (error) {
       console.error('Login error in AuthContext:', error);
@@ -100,6 +121,7 @@ export const AuthProvider = ({ children }) => {
     localStorage.removeItem('token');
     setToken(null);
     setUser(null);
+    setRequiresPasswordChange(false);
     navigate('/login');
   };
 
@@ -112,14 +134,35 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  const changePassword = async (newPassword) => {
+    try {
+      const response = await axios.post('/api/auth/change-password', { newPassword });
+      
+      // Update token and user state with the new values
+      if (response.data.token) {
+        localStorage.setItem('token', response.data.token);
+        setToken(response.data.token);
+        setUser(response.data.user);
+        setRequiresPasswordChange(false);
+      }
+      
+      return response.data;
+    } catch (error) {
+      console.error('Change password error:', error);
+      throw error;
+    }
+  };
+
   const value = {
     user,
     token,
     isLoading,
+    requiresPasswordChange,
     login,
     register,
     logout,
     forgotPassword,
+    changePassword,
   };
 
   return (

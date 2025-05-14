@@ -1,4 +1,4 @@
-// models/User.js - Simplified Version
+// models/User.js - Updated Version
 import mongoose from 'mongoose';
 import bcrypt from 'bcryptjs';
 
@@ -18,6 +18,11 @@ const UserSchema = new mongoose.Schema({
     type: String,
     required: true,
     select: false // Don't return password by default
+  },
+  isTemporaryPassword: {
+    type: Boolean,
+    default: false,
+    select: false // Don't return this by default
   },
   role: {
     type: String,
