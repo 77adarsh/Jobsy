@@ -1,7 +1,7 @@
 // src/components/Navbar.jsx
-import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext.jsx';
+import React, { useState } from "react";
+import { Link } from "react-router-dom";
+import { useAuth } from "../context/AuthContext.jsx";
 
 const Navbar = ({ transparent = false }) => {
   const { user, logout } = useAuth();
@@ -12,7 +12,7 @@ const Navbar = ({ transparent = false }) => {
   };
 
   return (
-    <nav className={`${transparent ? 'bg-transparent' : 'bg-white shadow'}`}>
+    <nav className={`${transparent ? "bg-transparent" : "bg-white shadow"}`}>
       <div className="container mx-auto px-4 py-4">
         <div className="flex justify-between items-center">
           {/* Logo */}
@@ -24,30 +24,97 @@ const Navbar = ({ transparent = false }) => {
 
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center space-x-6">
-            <Link to="/" className="text-gray-700 hover:text-blue-600">Home</Link>
-            <Link to="/find-job" className="text-gray-700 hover:text-blue-600">Find Job</Link>
-            <Link to="/category" className="text-gray-700 hover:text-blue-600">Category</Link>
-            <Link to="/blog" className="text-gray-700 hover:text-blue-600">Blog</Link>
-            
+            <Link to="/" className="text-gray-700 hover:text-blue-600">
+              Home
+            </Link>
+            <Link to="/find-job" className="text-gray-700 hover:text-blue-600">
+              Find Job
+            </Link>
+            <Link to="/category" className="text-gray-700 hover:text-blue-600">
+              Category
+            </Link>
+            <Link to="/blog" className="text-gray-700 hover:text-blue-600">
+              Blog
+            </Link>
+
             {user ? (
               <>
-                <Link to="/dashboard" className="text-gray-700 hover:text-blue-600">Dashboard</Link>
-                <Link to="/profile" className="text-gray-700 hover:text-blue-600">Profile</Link>
-                <button 
-                  onClick={logout}
-                  className="bg-red-600 hover:bg-red-700 text-white font-medium py-2 px-4 rounded-lg"
+                <Link
+                  to="/dashboard"
+                  className="text-gray-700 hover:text-blue-600"
                 >
+                  Dashboard
+                </Link>
+                <Link
+                  to="/profile"
+                  className="text-gray-700 hover:text-blue-600"
+                >
+                  Profile
+                </Link>
+                <button
+                  onClick={logout}
+                  className="flex items-center justify-center w-full md:w-28 h-10 px-4 py-2 rounded-md text-base font-medium text-white bg-blue-600 hover:bg-blue-700"
+                >
+                  <svg
+                    className="w-6 h-6 mr-2"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                    xmlns="http://www.w3.org/2000/svg"
+                    strokeWidth={2.5}
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
+                    />
+                  </svg>
                   Logout
                 </button>
               </>
             ) : (
               <>
-                <Link to="/login" className="text-gray-700 hover:text-blue-600">Log In</Link>
-                <Link 
-                  to="/register" 
-                  className="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg"
+                <Link
+                  to="/login"
+                  className="flex items-center justify-center w-full md:w-28 h-10 px-4 py-2 rounded-md text-base font-medium text-white bg-blue-600 hover:bg-blue-700"
                 >
-                  Sign Up
+                  <svg
+                    className="w-5 h-5 mr-2"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"
+                    />
+                  </svg>
+                  Log In
+                </Link>
+                <Link
+                  to="/register"
+                  className="flex items-center justify-center px-4 py-2 rounded-md text-base font-medium text-white bg-blue-600 hover:bg-blue-700 w-auto"
+                  style={{ minWidth: "120px" }}
+                >
+                  <svg
+                    className="w-5 h-5 mr-2"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"
+                    />
+                  </svg>
+                  <span className="whitespace-nowrap">Sign Up</span>
                 </Link>
               </>
             )}
@@ -80,67 +147,111 @@ const Navbar = ({ transparent = false }) => {
       </div>
 
       {/* Mobile Menu */}
-      <div className={`md:hidden ${isMenuOpen ? 'block' : 'hidden'}`}>
+      <div className={`md:hidden ${isMenuOpen ? "block" : "hidden"}`}>
         <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3 bg-white shadow">
-          <Link 
+          <Link
             to="/"
             className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-blue-600"
           >
             Home
           </Link>
-          <Link 
+          <Link
             to="/find-job"
             className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-blue-600"
           >
             Find Job
           </Link>
-          <Link 
+          <Link
             to="/category"
             className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-blue-600"
           >
             Category
           </Link>
-          <Link 
+          <Link
             to="/blog"
             className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-blue-600"
           >
             Blog
           </Link>
-          
+
           {user ? (
             <>
-              <Link 
+              <Link
                 to="/dashboard"
                 className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-blue-600"
               >
                 Dashboard
               </Link>
-              <Link 
+              <Link
                 to="/profile"
                 className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-blue-600"
               >
                 Profile
               </Link>
-              <button 
+              <button
                 onClick={logout}
-                className="w-full text-left block px-3 py-2 rounded-md text-base font-medium text-white bg-red-600 hover:bg-red-700"
+                className="flex items-center justify-center w-full h-10 px-4 py-2 rounded-md text-base font-medium text-white bg-blue-600 hover:bg-blue-700"
               >
+                <svg
+                  className="w-6 h-6 mr-2"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                  xmlns="http://www.w3.org/2000/svg"
+                  strokeWidth={2.5}
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
+                  />
+                </svg>
                 Logout
               </button>
             </>
           ) : (
             <>
-              <Link 
+              <Link
                 to="/login"
-                className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-blue-600"
+                className="flex items-center justify-center w-full h-10 px-4 py-2 rounded-md text-base font-medium text-white bg-blue-600 hover:bg-blue-700"
               >
+                <svg
+                  className="w-5 h-5 mr-2"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"
+                  />
+                </svg>
                 Log In
               </Link>
-              <Link 
+              <Link
                 to="/register"
-                className="block px-3 py-2 rounded-md text-base font-medium text-white bg-blue-600 hover:bg-blue-700"
+                className="flex items-center justify-center px-4 py-2 rounded-md text-base font-medium text-white bg-blue-600 hover:bg-blue-700 w-auto"
+                style={{ minWidth: "120px" }}
               >
-                Sign Up
+                <svg
+                  className="w-5 h-5 mr-2"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"
+                  />
+                </svg>
+                <span className="whitespace-nowrap">Sign Up</span>
               </Link>
             </>
           )}

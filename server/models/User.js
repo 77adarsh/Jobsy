@@ -1,4 +1,3 @@
-// models/User.js - Updated Version
 import mongoose from 'mongoose';
 import bcrypt from 'bcryptjs';
 
@@ -28,6 +27,17 @@ const UserSchema = new mongoose.Schema({
     type: String,
     enum: ['user', 'admin'],
     default: 'user'
+  },
+  // Add notification preferences to the user model
+  notificationPreferences: {
+    enabled: {
+      type: Boolean,
+      default: false
+    },
+    lastUpdated: {
+      type: Date,
+      default: Date.now
+    }
   }
 }, { timestamps: true });
 
