@@ -1,10 +1,8 @@
-// src/components/MyMap.jsx
 import React, { useEffect } from 'react';
 import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
-import 'leaflet/dist/leaflet.css'; // Essential Leaflet CSS
-import L from 'leaflet'; // Import Leaflet to fix marker issue
+import 'leaflet/dist/leaflet.css';
+import L from 'leaflet';
 
-// Fix for default Leaflet marker icon not showing up with React-Leaflet
 delete L.Icon.Default.prototype._getIconUrl;
 L.Icon.Default.mergeOptions({
     iconRetinaUrl: 'https://unpkg.com/leaflet@1.7.1/dist/images/marker-icon-2x.png',

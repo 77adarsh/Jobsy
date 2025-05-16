@@ -1,10 +1,8 @@
 import axios from 'axios';
-
-// Create axios instance with base URL
 const api = axios.create({
   baseURL: process.env.NODE_ENV === 'production' 
-    ? '/api' // Production - adjust this if your API is on a different domain
-    : '/api', // Development - this uses the proxy from package.json
+    ? '/api' 
+    : '/api',
   headers: {
     'Content-Type': 'application/json'
   }
@@ -31,8 +29,6 @@ api.interceptors.response.use(
     // Handle 401 errors (unauthorized)
     if (error.response && error.response.status === 401) {
       localStorage.removeItem('token');
-      // Redirect to login if needed
-      // window.location.href = '/login';
     }
     return Promise.reject(error);
   }
@@ -52,8 +48,5 @@ export const userService = {
   updateProfile: (userData) => api.put('/users/profile', userData),
   changePassword: (passwordData) => api.post('/users/change-password', passwordData),
 };
-
-// Additional services can be added as needed
-// export const someOtherService = { ... };
 
 export default api;

@@ -1,4 +1,3 @@
-// src/App.jsx
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Dashboard from './pages/Dashboard.jsx';
@@ -9,7 +8,7 @@ import Home from './pages/Home.jsx';
 import { AuthProvider } from './context/AuthContext.jsx';
 import PrivateRoute from './components/PrivateRoute.jsx';
 import ForgotPassword from './pages/ForgotPassword.jsx';
-import SetNewPassword from './components/SetNewPassword.jsx'; // Import the new component
+import SetNewPassword from './components/SetNewPassword.jsx';
 
 const App = () => {
   return (
