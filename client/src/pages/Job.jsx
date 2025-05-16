@@ -2,7 +2,7 @@ import React from "react";
 import { Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext.jsx";
 
-const Home = () => {
+const Job = () => {
   const { user, logout } = useAuth();
 
   return (
@@ -126,4 +126,4 @@ const Home = () => {
   );
 };
 
-export default Home;
+export default Job;

@@ -26,23 +26,23 @@ const Navbar = ({ transparent = false }) => {
             <Link to="/" className="text-gray-700 hover:text-blue-600">
               Home
             </Link>
-            <Link to="/find-job" className="text-gray-700 hover:text-blue-600">
-              Find Job
+            <Link
+              to="/internship"
+              className="text-gray-700 hover:text-blue-600"
+            >
+              Internship
             </Link>
-            <Link to="/category" className="text-gray-700 hover:text-blue-600">
-              Category
-            </Link>
-            <Link to="/blog" className="text-gray-700 hover:text-blue-600">
-              Blog
+            <Link to="/community" className="text-gray-700 hover:text-blue-600">
+              Community
             </Link>
 
             {user ? (
               <>
                 <Link
-                  to="/dashboard"
+                  to="/find-job"
                   className="text-gray-700 hover:text-blue-600"
                 >
-                  Dashboard
+                  Find Job
                 </Link>
                 <Link
                   to="/profile"
@@ -155,31 +155,25 @@ const Navbar = ({ transparent = false }) => {
             Home
           </Link>
           <Link
-            to="/find-job"
+            to="/internship"
             className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-blue-600"
           >
-            Find Job
+            Internship
           </Link>
           <Link
-            to="/category"
+            to="/community"
             className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-blue-600"
           >
-            Category
-          </Link>
-          <Link
-            to="/blog"
-            className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-blue-600"
-          >
-            Blog
+            Community
           </Link>
 
           {user ? (
             <>
               <Link
-                to="/dashboard"
+                to="/find-job"
                 className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-blue-600"
               >
-                Dashboard
+                Find Job
               </Link>
               <Link
                 to="/profile"
