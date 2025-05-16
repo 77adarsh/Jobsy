@@ -5,7 +5,7 @@ import {
   loginUser,
   getUserProfile,
   forgotPassword,
-  changePassword // Add the new controller function
+  changePassword
 } from '../controllers/authController.js';
 import verifyToken from '../middlewares/verifyToken.js';
 import { check } from 'express-validator';

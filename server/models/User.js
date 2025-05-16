@@ -28,15 +28,27 @@ const UserSchema = new mongoose.Schema({
     enum: ['user', 'admin'],
     default: 'user'
   },
-  // Add notification preferences to the user model
-  notificationPreferences: {
-    enabled: {
-      type: Boolean,
-      default: false
+  // Add CV-related fields
+  cv: {
+    fileName: {
+      type: String,
+      default: null
     },
-    lastUpdated: {
+    fileUrl: {
+      type: String,
+      default: null
+    },
+    uploadDate: {
       type: Date,
-      default: Date.now
+      default: null
+    },
+    fileSize: {
+      type: Number,
+      default: null
+    },
+    fileType: {
+      type: String,
+      default: null
     }
   }
 }, { timestamps: true });

@@ -83,7 +83,6 @@ export const loginUser = async (req, res) => {
   }
 
   const { email, password } = req.body;
-  console.log(`Login attempt for email: ${email}`);
 
   try {
     // Find user by email WITH password and isTemporaryPassword fields included
@@ -94,11 +93,9 @@ export const loginUser = async (req, res) => {
       return res.status(401).json({ msg: 'Invalid credentials' });
     }
 
-    console.log(`User found, password from DB: ${user.password ? 'exists' : 'missing'}`);
     
     // Direct comparison with bcrypt
     const isMatch = await bcrypt.compare(password, user.password);
-    console.log(`Password comparison result: ${isMatch ? 'match' : 'no match'}`);
 
     if (!isMatch) {
       console.log('Login failed: Password does not match');
