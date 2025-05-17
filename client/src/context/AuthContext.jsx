@@ -1,7 +1,12 @@
 import React, { createContext, useState, useEffect, useContext } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
-import { jwtDecode } from "jwt-decode";
+import jwtDecode from "jwt-decode";
+
+// Make sure you have VITE_BACKEND_API_URL in your .env file
+const BACKEND_URL = process.env.VITE_BACKEND_API_URL;
+
+axios.defaults.baseURL = BACKEND_URL;
 
 const AuthContext = createContext();
 
@@ -12,7 +17,6 @@ export const AuthProvider = ({ children }) => {
   const [requiresPasswordChange, setRequiresPasswordChange] = useState(false);
   const navigate = useNavigate();
 
-  // Set the Authorization header for all future requests when token changes
   useEffect(() => {
     if (token) {
       axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
@@ -27,7 +31,6 @@ export const AuthProvider = ({ children }) => {
       if (storedToken) {
         try {
           const decoded = jwtDecode(storedToken);
-          // Check if token is expired
           if (decoded.exp * 1000 < Date.now()) {
             console.log("Token expired, logging out");
             localStorage.removeItem("token");
@@ -38,23 +41,20 @@ export const AuthProvider = ({ children }) => {
             return;
           }
 
-          // Check if this is a temporary password
           if (decoded.isTemporaryPassword) {
             setRequiresPasswordChange(true);
           }
 
-          // Set default headers for axios
           axios.defaults.headers.common[
             "Authorization"
           ] = `Bearer ${storedToken}`;
 
           try {
-            const response = await axios.get("/api/auth/me");
+            const response = await axios.get("/auth/me");
             setUser(response.data.user);
             setToken(storedToken);
           } catch (error) {
             console.error("Error fetching user data:", error);
-            // Only clear auth if it's a 401 Unauthorized error
             if (error.response && error.response.status === 401) {
               localStorage.removeItem("token");
               setToken(null);
@@ -76,7 +76,6 @@ export const AuthProvider = ({ children }) => {
     loadUser();
   }, []);
 
-  // Handle redirecting to change password page if needed
   useEffect(() => {
     if (requiresPasswordChange && user && !isLoading) {
       navigate("/set-new-password");
@@ -85,7 +84,7 @@ export const AuthProvider = ({ children }) => {
 
   const login = async (email, password) => {
     try {
-      const response = await axios.post("/api/auth/login", { email, password });
+      const response = await axios.post("/auth/login", { email, password });
       const { token: newToken, user: loggedInUser } = response.data || {};
 
       if (loggedInUser?.requiresPasswordChange) {
@@ -108,7 +107,7 @@ export const AuthProvider = ({ children }) => {
 
   const register = async (name, email, password) => {
     try {
-      const response = await axios.post("/api/auth/register", {
+      const response = await axios.post("/auth/register", {
         name,
         email,
         password,
@@ -133,7 +132,7 @@ export const AuthProvider = ({ children }) => {
 
   const forgotPassword = async (email) => {
     try {
-      const response = await axios.post("/api/auth/forgot-password", { email });
+      const response = await axios.post("/auth/forgot-password", { email });
       return response.data;
     } catch (error) {
       throw error;
@@ -142,11 +141,10 @@ export const AuthProvider = ({ children }) => {
 
   const changePassword = async (newPassword) => {
     try {
-      const response = await axios.post("/api/auth/change-password", {
+      const response = await axios.post("/auth/change-password", {
         newPassword,
       });
 
-      // Update token and user state with the new values
       if (response.data.token) {
         localStorage.setItem("token", response.data.token);
         setToken(response.data.token);
@@ -176,6 +174,4 @@ export const AuthProvider = ({ children }) => {
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };
 
-export const useAuth = () => {
-  return useContext(AuthContext);
-};
+export const useAuth = () => useContext(AuthContext);
