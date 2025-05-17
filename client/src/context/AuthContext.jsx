@@ -85,21 +85,19 @@ export const AuthProvider = ({ children }) => {
     try {
       const response = await axios.post('/api/auth/login', { email, password });
       const { token: newToken, user: loggedInUser } = response.data;
-      
-      // Check if the user needs to change their password
-      if (response.data.user.requiresPasswordChange) {
+  
+      // Safely check if user exists and requires password change
+      if (loggedInUser?.requiresPasswordChange) {
         setRequiresPasswordChange(true);
       }
-      
-      // First set the token and user in state
+  
       localStorage.setItem('token', newToken);
       setToken(newToken);
       setUser(loggedInUser);
-      
-      // Return success
+  
       return true;
     } catch (error) {
-      console.error('Login error in AuthContext:', error);
+      console.error('Login error in AuthContext:', error?.response?.data || error.message);
       throw error;
     }
   };
