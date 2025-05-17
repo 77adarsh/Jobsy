@@ -27,10 +27,13 @@ const Navbar = ({ transparent = false }) => {
               Home
             </Link>
             <Link
-              to="/internship"
+              to="/internships"
               className="text-gray-700 hover:text-blue-600"
             >
-              Internship
+              Internships
+            </Link>
+            <Link to="/jobs" className="text-gray-700 hover:text-blue-600">
+              Jobs
             </Link>
             <Link to="/community" className="text-gray-700 hover:text-blue-600">
               Community
@@ -38,12 +41,6 @@ const Navbar = ({ transparent = false }) => {
 
             {user ? (
               <>
-                <Link
-                  to="/find-job"
-                  className="text-gray-700 hover:text-blue-600"
-                >
-                  Find Job
-                </Link>
                 <Link
                   to="/profile"
                   className="text-gray-700 hover:text-blue-600"
@@ -155,10 +152,16 @@ const Navbar = ({ transparent = false }) => {
             Home
           </Link>
           <Link
-            to="/internship"
+            to="/internships"
             className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-blue-600"
           >
-            Internship
+            Internships
+          </Link>
+          <Link
+            to="/jobs"
+            className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-blue-600"
+          >
+            Jobs
           </Link>
           <Link
             to="/community"
@@ -169,12 +172,6 @@ const Navbar = ({ transparent = false }) => {
 
           {user ? (
             <>
-              <Link
-                to="/find-job"
-                className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-blue-600"
-              >
-                Find Job
-              </Link>
               <Link
                 to="/profile"
                 className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-blue-600"

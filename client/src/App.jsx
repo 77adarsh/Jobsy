@@ -1,6 +1,6 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import Job from './pages/Job.jsx';
+import Jobs from './pages/Jobs.jsx';
 import Login from './pages/Login.jsx';
 import Register from './pages/Register.jsx';
 import Profile from './pages/Profile.jsx';
@@ -20,7 +20,7 @@ const App = () => {
           <Route path="/register" element={<Register />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/set-new-password" element={<PrivateRoute><SetNewPassword /></PrivateRoute>} />
-          <Route path="/find-job" element={<PrivateRoute><Job /></PrivateRoute>} />
+          <Route path="/jobs" element={<PrivateRoute><Jobs /></PrivateRoute>} />
           <Route path="/profile" element={<PrivateRoute><Profile /></PrivateRoute>} />
         </Routes>
       </AuthProvider>
