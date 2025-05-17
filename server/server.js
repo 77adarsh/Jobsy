@@ -14,25 +14,38 @@ connectDB();
 
 const app = express();
 
-// Set up __dirname equivalent for ES modules
+// Set up __dirname for ES Modules
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-app.use(express.json()); // To parse JSON request bodies
-app.use(express.urlencoded({ extended: true })); // <--- ADD THIS LINE to handle form data
+// Middlewares
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
+// ✅ CORS Setup — Important!
 app.use(cors({
-    origin: process.env.FRONTEND_ORIGIN // Or your frontend's actual origin
+  origin: process.env.FRONTEND_ORIGIN || "http://localhost:5173",
+  credentials: true // Important if you're using cookies or auth headers
 }));
 
-// Serve static files from the uploads directory - ADD THIS SECTION
+// ✅ Serve uploads
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
-// Routes
+// ✅ API Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/location', locationRoutes);
-app.use('/api/uploads', uploadRoutes); // <--- ADD THIS LINE
+app.use('/api/uploads', uploadRoutes);
 
-// Use custom error handler - should be the last middleware
+// ✅ Serve frontend in production
+if (process.env.NODE_ENV === "production") {
+  const frontendPath = path.join(__dirname, "frontend", "dist");
+  app.use(express.static(frontendPath));
+  app.get("*", (req, res) => {
+    res.sendFile(path.join(frontendPath, "index.html"));
+  });
+}
+
+// ✅ Error handler
 app.use(errorHandler);
 
 const PORT = process.env.PORT || 5000;
