@@ -3,7 +3,7 @@ import Navbar from "../components/Navbar.jsx";
 import Footer from "./Footer.jsx";
 import JobCategories from "./JobCategories.jsx";
 import JobInfoCard from "./InfoCard.jsx";
-import CvUploadSection from "./CVUploadSection.jsx";
+import CvUploadSection from "./CvUploadSection.jsx";
 
 import teamImage from "../assets/team.png";
 import adobeImage from "../assets/adobe.png";
