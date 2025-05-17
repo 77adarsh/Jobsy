@@ -2,7 +2,7 @@ import axios from 'axios';
 
 // Use environment variable or fallback to local proxy
 const api = axios.create({
-  baseURL: import.meta.env.VITE_BACKEND_API_URL || '/api',
+  baseURL: import.meta.env.VITE_BACKEND_API_URL,
   headers: {
     'Content-Type': 'application/json',
   },
