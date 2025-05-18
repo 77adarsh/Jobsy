@@ -1,4 +1,3 @@
-// controllers/authController.js - Updated for temporary password flow
 import User from '../models/User.js';
 import PasswordReset from '../models/PasswordReset.js';
 import nodemailer from 'nodemailer';
