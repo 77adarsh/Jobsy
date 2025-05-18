@@ -3,6 +3,9 @@ import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { jwtDecode } from "jwt-decode";
 
+// Read the API base URL from environment variables
+const API_BASE_URL = import.meta.env.VITE_API_URL;
+
 const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
@@ -49,7 +52,7 @@ export const AuthProvider = ({ children }) => {
           ] = `Bearer ${storedToken}`;
 
           try {
-            const response = await axios.get("https://jobsy-server-ymhy.onrender.com/api/auth/me");
+            const response = await axios.get(`${API_BASE_URL}/auth/me`);
             setUser(response.data.user);
             setToken(storedToken);
           } catch (error) {
@@ -85,7 +88,7 @@ export const AuthProvider = ({ children }) => {
 
   const login = async (email, password) => {
     try {
-      const response = await axios.post("https://jobsy-server-ymhy.onrender.com/api/auth/login", { email, password });
+      const response = await axios.post(`${API_BASE_URL}/auth/login`, { email, password });
       const { token: newToken, user: loggedInUser } = response.data || {};
 
       if (loggedInUser?.requiresPasswordChange) {
@@ -108,7 +111,7 @@ export const AuthProvider = ({ children }) => {
 
   const register = async (name, email, password) => {
     try {
-      const response = await axios.post("https://jobsy-server-ymhy.onrender.com/api/auth/register", {
+      const response = await axios.post(`${API_BASE_URL}/auth/register`, {
         name,
         email,
         password,
@@ -133,7 +136,7 @@ export const AuthProvider = ({ children }) => {
 
   const forgotPassword = async (email) => {
     try {
-      const response = await axios.post("https://jobsy-server-ymhy.onrender.com/api/auth/forgot-password", { email });
+      const response = await axios.post(`${API_BASE_URL}/auth/forgot-password`, { email });
       return response.data;
     } catch (error) {
       throw error;
@@ -142,7 +145,7 @@ export const AuthProvider = ({ children }) => {
 
   const changePassword = async (newPassword) => {
     try {
-      const response = await axios.post("https://jobsy-server-ymhy.onrender.com/api/auth/change-password", {
+      const response = await axios.post(`${API_BASE_URL}/auth/change-password`, {
         newPassword,
       });
 

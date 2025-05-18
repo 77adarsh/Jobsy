@@ -78,8 +78,8 @@ const Profile = () => {
           try {
             const response = await fetch(
               `${
-                import.meta.env.VITE_BACKEND_API_URL
-              }/api/location/track?lat=${latitude}&lng=${longitude}`
+                import.meta.env.VITE_API_URL
+              }/location/track?lat=${latitude}&lng=${longitude}`
             );
             const data = await response.json();
 
